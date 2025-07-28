@@ -1,0 +1,287 @@
+{% extends "base.html" %}
+
+{% block title %}Predicciones Detalladas - Predicción de Abandono{% endblock %}
+
+{% block content %}
+<div class="bg-white shadow overflow-hidden sm:rounded-lg mb-6">
+    <div class="px-4 py-5 sm:px-6">
+        <h3 class="text-lg leading-6 font-medium text-gray-900">
+            Predicciones Detalladas de Abandono
+        </h3>
+        <p class="mt-1 max-w-2xl text-sm text-gray-500">
+            Lista de usuarios con sus predicciones de abandono.
+        </p>
+    </div>
+</div>
+
+<!-- Filtros -->
+<div class="bg-white shadow overflow-hidden sm:rounded-lg mb-6">
+    <div class="px-4 py-5 sm:px-6">
+        <h3 class="text-sm font-medium text-gray-900 mb-2">Filtrar por:</h3>
+        <div class="flex flex-wrap gap-4">
+            <div>
+                <label for="riesgo-filter" class="block text-xs font-medium text-gray-700">Nivel de Riesgo</label>
+                <select id="riesgo-filter" class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md">
+                    <option value="todos">Todos</option>
+                    <option value="Alto">Alto</option>
+                    <option value="Medio">Medio</option>
+                    <option value="Bajo">Bajo</option>
+                </select>
+            </div>
+            <div>
+                <label for="sentimiento-filter" class="block text-xs font-medium text-gray-700">Sentimiento</label>
+                <select id="sentimiento-filter" class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md">
+                    <option value="todos">Todos</option>
+                    <option value="Muy Positivo">Muy Positivo</option>
+                    <option value="Positivo">Positivo</option>
+                    <option value="Neutral">Neutral</option>
+                    <option value="Negativo">Negativo</option>
+                    <option value="Muy Negativo">Muy Negativo</option>
+                </select>
+            </div>
+            <div>
+                <label for="search" class="block text-xs font-medium text-gray-700">Buscar</label>
+                <input type="text" id="search" class="mt-1 focus:ring-blue-500 focus:border-blue-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md" placeholder="ID de usuario">
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Tabla de predicciones -->
+<div class="flex flex-col">
+    <div class="-my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
+        <div class="py-2 align-middle inline-block min-w-full sm:px-6 lg:px-8">
+            <div class="shadow overflow-hidden border-b border-gray-200 sm:rounded-lg">
+                <table class="min-w-full divide-y divide-gray-200">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                ID Usuario
+                            </th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Prob. Abandono
+                            </th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Nivel Riesgo
+                            </th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Sentimiento
+                            </th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Intención
+                            </th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Lecciones
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody id="predicciones-table" class="bg-white divide-y divide-gray-200">
+                        {% for prediccion in predicciones %}
+                        <tr class="prediccion-row" 
+                            data-riesgo="{{ prediccion.nivel_riesgo }}" 
+                            data-sentimiento="{{ prediccion.categoria_sentimiento }}" 
+                            data-uid="{{ prediccion.uid }}">
+                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                                {{ prediccion.uid }}
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                {{ "%.2f"|format(prediccion.prob_abandono*100) }}%
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                {% if prediccion.nivel_riesgo == 'Alto' %}
+                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">
+                                    Alto
+                                </span>
+                                {% elif prediccion.nivel_riesgo == 'Medio' %}
+                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800">
+                                    Medio
+                                </span>
+                                {% else %}
+                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
+                                    Bajo
+                                </span>
+                                {% endif %}
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                {{ prediccion.categoria_sentimiento }}
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                {{ prediccion.intencion_mas_frecuente }}
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                {{ prediccion.total_lecciones_completadas }}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Paginación -->
+<div class="bg-white px-4 py-3 flex items-center justify-between border-t border-gray-200 sm:px-6 mt-4">
+    <div class="flex-1 flex justify-between sm:hidden">
+        <a href="#" class="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
+            Anterior
+        </a>
+        <a href="#" class="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
+            Siguiente
+        </a>
+    </div>
+    <div class="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
+        <div>
+            <p class="text-sm text-gray-700">
+                Mostrando <span class="font-medium" id="showing-start">1</span> a <span class="font-medium" id="showing-end">10</span> de <span class="font-medium" id="total-items">{{ predicciones|length }}</span> resultados
+            </p>
+        </div>
+        <div>
+            <nav class="relative z-0 inline-flex rounded-md shadow-sm -space-x-px" aria-label="Pagination">
+                <a href="#" id="prev-page" class="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">
+                    <span class="sr-only">Anterior</span>
+                    <!-- Heroicon name: solid/chevron-left -->
+                    <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                        <path fill-rule="evenodd" d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clip-rule="evenodd" />
+                    </svg>
+                </a>
+                <div id="pagination-numbers">
+                    <!-- Números de página generados por JS -->
+                </div>
+                <a href="#" id="next-page" class="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">
+                    <span class="sr-only">Siguiente</span>
+                    <!-- Heroicon name: solid/chevron-right -->
+                    <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                        <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd" />
+                    </svg>
+                </a>
+            </nav>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const riesgoFilter = document.getElementById('riesgo-filter');
+        const sentimientoFilter = document.getElementById('sentimiento-filter');
+        const searchInput = document.getElementById('search');
+        const rows = document.querySelectorAll('.prediccion-row');
+        
+        const itemsPerPage = 10;
+        let currentPage = 1;
+        let filteredRows = [...rows];
+        
+        // Función para aplicar filtros
+        function applyFilters() {
+            const riesgoValue = riesgoFilter.value;
+            const sentimientoValue = sentimientoFilter.value;
+            const searchValue = searchInput.value.toLowerCase();
+            
+            filteredRows = [...rows].filter(row => {
+                const riesgo = row.getAttribute('data-riesgo');
+                const sentimiento = row.getAttribute('data-sentimiento');
+                const uid = row.getAttribute('data-uid').toLowerCase();
+                
+                const riesgoMatch = riesgoValue === 'todos' || riesgo === riesgoValue;
+                const sentimientoMatch = sentimientoValue === 'todos' || sentimiento === sentimientoValue;
+                const searchMatch = uid.includes(searchValue);
+                
+                return riesgoMatch && sentimientoMatch && searchMatch;
+            });
+            
+            updatePagination();
+            showPage(1);
+        }
+        
+        // Función para actualizar la paginación
+        function updatePagination() {
+            const totalPages = Math.ceil(filteredRows.length / itemsPerPage);
+            const paginationNumbers = document.getElementById('pagination-numbers');
+            paginationNumbers.innerHTML = '';
+            
+            document.getElementById('total-items').textContent = filteredRows.length;
+            
+            // Crear números de página
+            for (let i = 1; i <= totalPages; i++) {
+                const pageLink = document.createElement('a');
+                pageLink.href = '#';
+                pageLink.className = i === currentPage 
+                    ? 'relative inline-flex items-center px-4 py-2 border border-blue-500 bg-blue-50 text-sm font-medium text-blue-600' 
+                    : 'relative inline-flex items-center px-4 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50';
+                pageLink.textContent = i;
+                pageLink.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    showPage(i);
+                });
+                paginationNumbers.appendChild(pageLink);
+            }
+            
+            // Actualizar estado de botones anterior/siguiente
+            document.getElementById('prev-page').classList.toggle('opacity-50', currentPage === 1);
+            document.getElementById('next-page').classList.toggle('opacity-50', currentPage === totalPages);
+        }
+        
+        // Función para mostrar una página específica
+        function showPage(pageNum) {
+            currentPage = pageNum;
+            const start = (pageNum - 1) * itemsPerPage;
+            const end = start + itemsPerPage;
+            
+            // Ocultar todas las filas
+            rows.forEach(row => {
+                row.style.display = 'none';
+            });
+            
+            // Mostrar solo las filas filtradas de la página actual
+            filteredRows.slice(start, end).forEach(row => {
+                row.style.display = '';
+            });
+            
+            // Actualizar información de paginación
+            document.getElementById('showing-start').textContent = filteredRows.length > 0 ? start + 1 : 0;
+            document.getElementById('showing-end').textContent = Math.min(end, filteredRows.length);
+            
+            // Actualizar estilos de los botones de página
+            const pageButtons = document.querySelectorAll('#pagination-numbers a');
+            pageButtons.forEach((button, index) => {
+                if (index + 1 === currentPage) {
+                    button.className = 'relative inline-flex items-center px-4 py-2 border border-blue-500 bg-blue-50 text-sm font-medium text-blue-600';
+                } else {
+                    button.className = 'relative inline-flex items-center px-4 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50';
+                }
+            });
+            
+            // Actualizar estado de botones anterior/siguiente
+            const totalPages = Math.ceil(filteredRows.length / itemsPerPage);
+            document.getElementById('prev-page').classList.toggle('opacity-50', currentPage === 1);
+            document.getElementById('next-page').classList.toggle('opacity-50', currentPage === totalPages);
+        }
+        
+        // Event listeners para filtros
+        riesgoFilter.addEventListener('change', applyFilters);
+        sentimientoFilter.addEventListener('change', applyFilters);
+        searchInput.addEventListener('input', applyFilters);
+        
+        // Event listeners para paginación
+        document.getElementById('prev-page').addEventListener('click', function(e) {
+            e.preventDefault();
+            if (currentPage > 1) {
+                showPage(currentPage - 1);
+            }
+        });
+        
+        document.getElementById('next-page').addEventListener('click', function(e) {
+            e.preventDefault();
+            const totalPages = Math.ceil(filteredRows.length / itemsPerPage);
+            if (currentPage < totalPages) {
+                showPage(currentPage + 1);
+            }
+        });
+        
+        // Inicializar paginación
+        applyFilters();
+    });
+</script>
+{% endblock %} 

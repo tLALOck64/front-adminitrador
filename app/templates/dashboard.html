@@ -1,0 +1,286 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard - Predicción de Abandono{% endblock %}
+
+{% block content %}
+<div class="bg-white shadow overflow-hidden sm:rounded-lg mb-6">
+    <div class="px-4 py-5 sm:px-6">
+        <h3 class="text-lg leading-6 font-medium text-gray-900">
+            Dashboard de Predicción de Abandono
+        </h3>
+        <p class="mt-1 max-w-2xl text-sm text-gray-500">
+            Resumen de predicciones y análisis de abandono de usuarios.
+        </p>
+    </div>
+    <div class="border-t border-gray-200">
+        <dl>
+            <div class="bg-gray-50 px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+                <dt class="text-sm font-medium text-gray-500">
+                    Total de usuarios analizados
+                </dt>
+                <dd class="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
+                    {{ total_usuarios }}
+                </dd>
+            </div>
+            <div class="bg-white px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+                <dt class="text-sm font-medium text-gray-500">
+                    Usuarios en riesgo alto de abandono
+                </dt>
+                <dd class="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
+                    {{ riesgo_alto }} ({{ porcentaje_alto }}%)
+                </dd>
+            </div>
+            <div class="bg-gray-50 px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+                <dt class="text-sm font-medium text-gray-500">
+                    Usuarios en riesgo medio de abandono
+                </dt>
+                <dd class="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
+                    {{ riesgo_medio }} ({{ porcentaje_medio }}%)
+                </dd>
+            </div>
+            <div class="bg-white px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+                <dt class="text-sm font-medium text-gray-500">
+                    Usuarios en riesgo bajo de abandono
+                </dt>
+                <dd class="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
+                    {{ riesgo_bajo }} ({{ porcentaje_bajo }}%)
+                </dd>
+            </div>
+        </dl>
+    </div>
+</div>
+
+<!-- Gráficos -->
+<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+    <!-- Gráfico de distribución de riesgo -->
+    <div class="bg-white shadow overflow-hidden sm:rounded-lg">
+        <div class="px-4 py-5 sm:px-6">
+            <h3 class="text-lg leading-6 font-medium text-gray-900">
+                Distribución de Riesgo de Abandono
+            </h3>
+        </div>
+        <div class="p-4">
+            <canvas id="riskDistributionChart" height="300"></canvas>
+        </div>
+    </div>
+
+    <!-- Gráfico de sentimiento vs abandono -->
+    <div class="bg-white shadow overflow-hidden sm:rounded-lg">
+        <div class="px-4 py-5 sm:px-6">
+            <h3 class="text-lg leading-6 font-medium text-gray-900">
+                Sentimiento vs Riesgo de Abandono
+            </h3>
+        </div>
+        <div class="p-4">
+            <canvas id="sentimentChart" height="300"></canvas>
+        </div>
+    </div>
+</div>
+
+<!-- Segunda fila de gráficos -->
+<div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
+    <!-- Gráfico de intenciones más frecuentes -->
+    <div class="bg-white shadow overflow-hidden sm:rounded-lg">
+        <div class="px-4 py-5 sm:px-6">
+            <h3 class="text-lg leading-6 font-medium text-gray-900">
+                Intenciones más Frecuentes
+            </h3>
+        </div>
+        <div class="p-4">
+            <canvas id="intentionsChart" height="300"></canvas>
+        </div>
+    </div>
+
+    <!-- Gráfico de correlación con abandono -->
+    <div class="bg-white shadow overflow-hidden sm:rounded-lg">
+        <div class="px-4 py-5 sm:px-6">
+            <h3 class="text-lg leading-6 font-medium text-gray-900">
+                Factores que Influyen en el Abandono
+            </h3>
+        </div>
+        <div class="p-4">
+            <canvas id="correlationChart" height="300"></canvas>
+        </div>
+    </div>
+</div>
+
+<!-- Botones de acción -->
+<div class="mt-6 flex flex-col sm:flex-row gap-4">
+    <a href="/predicciones" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+        Ver Predicciones Detalladas
+    </a>
+    <a href="/analisis" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">
+        Ver Análisis Completo
+    </a>
+    <button id="refreshDataBtn" class="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md shadow-sm text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+        Actualizar Datos
+    </button>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Gráfico de distribución de riesgo
+        const riskCtx = document.getElementById('riskDistributionChart').getContext('2d');
+        const riskChart = new Chart(riskCtx, {
+            type: 'pie',
+            data: {
+                labels: ['Riesgo Alto', 'Riesgo Medio', 'Riesgo Bajo'],
+                datasets: [{
+                    data: [{{ riesgo_alto }}, {{ riesgo_medio }}, {{ riesgo_bajo }}],
+                    backgroundColor: [
+                        'rgba(255, 99, 132, 0.7)',
+                        'rgba(255, 206, 86, 0.7)',
+                        'rgba(75, 192, 192, 0.7)'
+                    ],
+                    borderColor: [
+                        'rgba(255, 99, 132, 1)',
+                        'rgba(255, 206, 86, 1)',
+                        'rgba(75, 192, 192, 1)'
+                    ],
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                    },
+                    title: {
+                        display: true,
+                        text: 'Distribución de Riesgo de Abandono'
+                    }
+                }
+            }
+        });
+
+        // Gráfico de sentimiento vs abandono
+        const sentimentCtx = document.getElementById('sentimentChart').getContext('2d');
+        const sentimentChart = new Chart(sentimentCtx, {
+            type: 'bar',
+            data: {
+                labels: {{ sentimiento_labels|safe }},
+                datasets: [{
+                    label: 'Tasa de Abandono (%)',
+                    data: {{ sentimiento_valores|safe }},
+                    backgroundColor: 'rgba(54, 162, 235, 0.7)',
+                    borderColor: 'rgba(54, 162, 235, 1)',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        max: 100
+                    }
+                },
+                plugins: {
+                    legend: {
+                        display: false
+                    },
+                    title: {
+                        display: true,
+                        text: 'Tasa de Abandono por Sentimiento'
+                    }
+                }
+            }
+        });
+
+        // Gráfico de intenciones
+        const intentionsCtx = document.getElementById('intentionsChart').getContext('2d');
+        const intentionsChart = new Chart(intentionsCtx, {
+            type: 'bar',
+            data: {
+                labels: {{ intenciones_labels|safe }},
+                datasets: [{
+                    label: 'Tasa de Abandono (%)',
+                    data: {{ intenciones_valores|safe }},
+                    backgroundColor: 'rgba(153, 102, 255, 0.7)',
+                    borderColor: 'rgba(153, 102, 255, 1)',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        max: 100
+                    }
+                },
+                plugins: {
+                    legend: {
+                        display: false
+                    },
+                    title: {
+                        display: true,
+                        text: 'Tasa de Abandono por Intención'
+                    }
+                }
+            }
+        });
+
+        // Gráfico de correlación
+        const correlationCtx = document.getElementById('correlationChart').getContext('2d');
+        const correlationChart = new Chart(correlationCtx, {
+            type: 'bar',
+            data: {
+                labels: {{ correlacion_labels|safe }},
+                datasets: [{
+                    label: 'Correlación con Abandono',
+                    data: {{ correlacion_valores|safe }},
+                    backgroundColor: 'rgba(255, 159, 64, 0.7)',
+                    borderColor: 'rgba(255, 159, 64, 1)',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                indexAxis: 'y',
+                responsive: true,
+                scales: {
+                    x: {
+                        beginAtZero: true,
+                        max: 1
+                    }
+                },
+                plugins: {
+                    legend: {
+                        display: false
+                    },
+                    title: {
+                        display: true,
+                        text: 'Correlación de Factores con Abandono'
+                    }
+                }
+            }
+        });
+
+        // Botón de actualizar datos
+        document.getElementById('refreshDataBtn').addEventListener('click', function() {
+            this.disabled = true;
+            this.innerHTML = '<div class="loader mr-2 h-4 w-4 border-2 rounded-full border-t-2 border-gray-500"></div> Actualizando...';
+            
+            fetch('/actualizar-datos')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        window.location.reload();
+                    } else {
+                        alert('Error al actualizar los datos: ' + data.error);
+                        this.disabled = false;
+                        this.innerHTML = 'Actualizar Datos';
+                    }
+                })
+                .catch(error => {
+                    alert('Error al actualizar los datos: ' + error);
+                    this.disabled = false;
+                    this.innerHTML = 'Actualizar Datos';
+                });
+        });
+    });
+</script>
+{% endblock %} 

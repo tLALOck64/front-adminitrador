@@ -1,0 +1,5 @@
+uid,prob_abandono,prediccion,nivel_riesgo,fecha_registro,ultima_fecha_de_actividad,total_lecciones_completadas,abandono,intencion,sentimiento_promedio,estrella_promedio,intencion_mas_frecuente,categoria_sentimiento
+2813dd85-8977-495b-abbd-3127077b3472,0.6658041302370045,1,Medio,2025-07-28T21:00:00.000Z,2025-07-28T21:00:00.000Z,10,0,appreciation,-0.8122488484717962,5.0,appreciation,Muy Negativo
+2c9ebee7-18d0-4fda-8309-dea16a8fd666,0.3779524314822421,0,Medio,2023-03-01T06:00:00.000Z,2023-03-01T06:00:00.000Z,10,1,bug,0.7923019174529373,2.0,bug,Muy Positivo
+ce349e47-b94b-4d5c-b045-17be8c04cec6,0.6678355167845141,1,Medio,2023-03-01T12:00:00.000Z,2023-03-01T12:00:00.000Z,10,1,complaint,-0.585498968575419,1.0,complaint,Muy Negativo
+fd268ab3-68c3-40b1-b8fd-b73a5e8fa39d,0.9123946559964089,1,Alto,2023-03-01T12:00:00.000Z,2023-03-01T12:00:00.000Z,10,1,confusion,0.08654198588416784,3.0,other,Neutral

@@ -1,0 +1,295 @@
+{% extends "base.html" %}
+
+{% block title %}Análisis Detallado - Predicción de Abandono{% endblock %}
+
+{% block content %}
+<div class="bg-white shadow overflow-hidden sm:rounded-lg mb-6">
+    <div class="px-4 py-5 sm:px-6">
+        <h3 class="text-lg leading-6 font-medium text-gray-900">
+            Análisis Detallado de Abandono
+        </h3>
+        <p class="mt-1 max-w-2xl text-sm text-gray-500">
+            Análisis completo de factores que influyen en el abandono de usuarios.
+        </p>
+    </div>
+</div>
+
+<!-- Métricas de rendimiento del modelo -->
+<div class="bg-white shadow overflow-hidden sm:rounded-lg mb-6">
+    <div class="px-4 py-5 sm:px-6 flex justify-between items-center">
+        <h3 class="text-lg leading-6 font-medium text-gray-900">
+            Métricas del Modelo
+        </h3>
+    </div>
+    <div class="border-t border-gray-200">
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-4 p-4">
+            <div class="bg-gray-50 p-4 rounded-lg">
+                <div class="text-sm font-medium text-gray-500">Accuracy</div>
+                <div class="mt-1 text-3xl font-semibold text-gray-900">{{ "%.2f"|format(metricas.accuracy*100) }}%</div>
+                <div class="text-xs text-gray-500 mt-2">Precisión general del modelo</div>
+            </div>
+            <div class="bg-gray-50 p-4 rounded-lg">
+                <div class="text-sm font-medium text-gray-500">Precision</div>
+                <div class="mt-1 text-3xl font-semibold text-gray-900">{{ "%.2f"|format(metricas.precision*100) }}%</div>
+                <div class="text-xs text-gray-500 mt-2">Exactitud de predicciones positivas</div>
+            </div>
+            <div class="bg-gray-50 p-4 rounded-lg">
+                <div class="text-sm font-medium text-gray-500">Recall</div>
+                <div class="mt-1 text-3xl font-semibold text-gray-900">{{ "%.2f"|format(metricas.recall*100) }}%</div>
+                <div class="text-xs text-gray-500 mt-2">Capacidad para encontrar todos los casos positivos</div>
+            </div>
+            <div class="bg-gray-50 p-4 rounded-lg">
+                <div class="text-sm font-medium text-gray-500">F1-Score</div>
+                <div class="mt-1 text-3xl font-semibold text-gray-900">{{ "%.2f"|format(metricas.f1_score*100) }}%</div>
+                <div class="text-xs text-gray-500 mt-2">Balance entre precision y recall</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Análisis de factores -->
+<div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+    <!-- Análisis por sentimiento -->
+    <div class="bg-white shadow overflow-hidden sm:rounded-lg">
+        <div class="px-4 py-5 sm:px-6">
+            <h3 class="text-lg leading-6 font-medium text-gray-900">
+                Análisis por Sentimiento
+            </h3>
+            <p class="mt-1 max-w-2xl text-sm text-gray-500">
+                Relación entre sentimiento del usuario y probabilidad de abandono.
+            </p>
+        </div>
+        <div class="border-t border-gray-200">
+            <div class="p-4">
+                <canvas id="sentimientoChart" height="300"></canvas>
+            </div>
+            <div class="px-4 py-5">
+                <h4 class="text-sm font-medium text-gray-900 mb-2">Insights:</h4>
+                <ul class="list-disc pl-5 text-sm text-gray-600">
+                    <li>Los usuarios con sentimiento negativo tienen {{ "%.1f"|format(sentimiento_insights.negativo) }}% más probabilidad de abandono.</li>
+                    <li>Los usuarios con sentimiento muy positivo tienen la menor tasa de abandono ({{ "%.1f"|format(sentimiento_insights.muy_positivo) }}%).</li>
+                    <li>Existe una correlación de {{ "%.2f"|format(sentimiento_insights.correlacion) }} entre sentimiento y abandono.</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- Análisis por intención -->
+    <div class="bg-white shadow overflow-hidden sm:rounded-lg">
+        <div class="px-4 py-5 sm:px-6">
+            <h3 class="text-lg leading-6 font-medium text-gray-900">
+                Análisis por Intención
+            </h3>
+            <p class="mt-1 max-w-2xl text-sm text-gray-500">
+                Relación entre la intención más frecuente y probabilidad de abandono.
+            </p>
+        </div>
+        <div class="border-t border-gray-200">
+            <div class="p-4">
+                <canvas id="intencionChart" height="300"></canvas>
+            </div>
+            <div class="px-4 py-5">
+                <h4 class="text-sm font-medium text-gray-900 mb-2">Insights:</h4>
+                <ul class="list-disc pl-5 text-sm text-gray-600">
+                    <li>La intención "{{ intencion_insights.mayor_abandono.intencion }}" tiene la mayor tasa de abandono ({{ "%.1f"|format(intencion_insights.mayor_abandono.tasa) }}%).</li>
+                    <li>La intención "{{ intencion_insights.menor_abandono.intencion }}" tiene la menor tasa de abandono ({{ "%.1f"|format(intencion_insights.menor_abandono.tasa) }}%).</li>
+                    <li>Las intenciones relacionadas con quejas muestran un {{ "%.1f"|format(intencion_insights.quejas_vs_promedio) }}% más de abandono que el promedio.</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Correlación de factores -->
+<div class="bg-white shadow overflow-hidden sm:rounded-lg mb-6">
+    <div class="px-4 py-5 sm:px-6">
+        <h3 class="text-lg leading-6 font-medium text-gray-900">
+            Correlación de Factores con Abandono
+        </h3>
+        <p class="mt-1 max-w-2xl text-sm text-gray-500">
+            Análisis de qué factores tienen mayor impacto en el abandono.
+        </p>
+    </div>
+    <div class="border-t border-gray-200">
+        <div class="p-4">
+            <canvas id="correlacionChart" height="200"></canvas>
+        </div>
+        <div class="px-4 py-5">
+            <h4 class="text-sm font-medium text-gray-900 mb-2">Insights:</h4>
+            <ul class="list-disc pl-5 text-sm text-gray-600">
+                <li>El factor "{{ correlacion_insights.mayor_factor }}" tiene la correlación más fuerte con el abandono ({{ "%.2f"|format(correlacion_insights.mayor_valor) }}).</li>
+                <li>El factor "{{ correlacion_insights.menor_factor }}" tiene la correlación más débil con el abandono ({{ "%.2f"|format(correlacion_insights.menor_valor) }}).</li>
+                <li>Los factores relacionados con la actividad del usuario son los más determinantes para predecir abandono.</li>
+            </ul>
+        </div>
+    </div>
+</div>
+
+<!-- Recomendaciones -->
+<div class="bg-white shadow overflow-hidden sm:rounded-lg mb-6">
+    <div class="px-4 py-5 sm:px-6">
+        <h3 class="text-lg leading-6 font-medium text-gray-900">
+            Recomendaciones para Reducir el Abandono
+        </h3>
+    </div>
+    <div class="border-t border-gray-200">
+        <div class="px-4 py-5">
+            <ol class="list-decimal pl-5 space-y-2">
+                {% for recomendacion in recomendaciones %}
+                <li class="text-gray-800">{{ recomendacion }}</li>
+                {% endfor %}
+            </ol>
+        </div>
+    </div>
+</div>
+
+<!-- Acciones -->
+<div class="flex flex-col sm:flex-row gap-4 mb-6">
+    <a href="/predicciones" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+        Ver Predicciones Detalladas
+    </a>
+    <button id="exportarBtn" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">
+        Exportar Análisis (CSV)
+    </button>
+    <button id="actualizarBtn" class="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md shadow-sm text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+        Actualizar Análisis
+    </button>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Gráfico de sentimiento
+        const sentimientoCtx = document.getElementById('sentimientoChart').getContext('2d');
+        const sentimientoChart = new Chart(sentimientoCtx, {
+            type: 'bar',
+            data: {
+                labels: {{ sentimiento_labels|safe }},
+                datasets: [{
+                    label: 'Tasa de Abandono (%)',
+                    data: {{ sentimiento_valores|safe }},
+                    backgroundColor: 'rgba(54, 162, 235, 0.7)',
+                    borderColor: 'rgba(54, 162, 235, 1)',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        max: 100
+                    }
+                },
+                plugins: {
+                    legend: {
+                        display: false
+                    },
+                    title: {
+                        display: true,
+                        text: 'Tasa de Abandono por Sentimiento'
+                    }
+                }
+            }
+        });
+        
+        // Gráfico de intención
+        const intencionCtx = document.getElementById('intencionChart').getContext('2d');
+        const intencionChart = new Chart(intencionCtx, {
+            type: 'bar',
+            data: {
+                labels: {{ intencion_labels|safe }},
+                datasets: [{
+                    label: 'Tasa de Abandono (%)',
+                    data: {{ intencion_valores|safe }},
+                    backgroundColor: 'rgba(153, 102, 255, 0.7)',
+                    borderColor: 'rgba(153, 102, 255, 1)',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        max: 100
+                    }
+                },
+                plugins: {
+                    legend: {
+                        display: false
+                    },
+                    title: {
+                        display: true,
+                        text: 'Tasa de Abandono por Intención'
+                    }
+                }
+            }
+        });
+        
+        // Gráfico de correlación
+        const correlacionCtx = document.getElementById('correlacionChart').getContext('2d');
+        const correlacionChart = new Chart(correlacionCtx, {
+            type: 'bar',
+            data: {
+                labels: {{ correlacion_labels|safe }},
+                datasets: [{
+                    label: 'Correlación con Abandono',
+                    data: {{ correlacion_valores|safe }},
+                    backgroundColor: 'rgba(255, 159, 64, 0.7)',
+                    borderColor: 'rgba(255, 159, 64, 1)',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                indexAxis: 'y',
+                responsive: true,
+                scales: {
+                    x: {
+                        beginAtZero: true,
+                        max: 1
+                    }
+                },
+                plugins: {
+                    legend: {
+                        display: false
+                    },
+                    title: {
+                        display: true,
+                        text: 'Correlación de Factores con Abandono'
+                    }
+                }
+            }
+        });
+        
+        // Botón de exportar análisis
+        document.getElementById('exportarBtn').addEventListener('click', function() {
+            window.location.href = '/exportar-analisis';
+        });
+        
+        // Botón de actualizar análisis
+        document.getElementById('actualizarBtn').addEventListener('click', function() {
+            this.disabled = true;
+            this.innerHTML = '<div class="loader mr-2 h-4 w-4 border-2 rounded-full border-t-2 border-gray-500"></div> Actualizando...';
+            
+            fetch('/actualizar-analisis')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        window.location.reload();
+                    } else {
+                        alert('Error al actualizar el análisis: ' + data.error);
+                        this.disabled = false;
+                        this.innerHTML = 'Actualizar Análisis';
+                    }
+                })
+                .catch(error => {
+                    alert('Error al actualizar el análisis: ' + error);
+                    this.disabled = false;
+                    this.innerHTML = 'Actualizar Análisis';
+                });
+        });
+    });
+</script>
+{% endblock %} 
